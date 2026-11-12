@@ -1,0 +1,94 @@
+---
+// Invite sheet (post-signup second conversion). Native <dialog> for focus management and Esc.
+import Icon from "./Icon.astro";
+---
+<dialog class="sheet" data-invite-sheet aria-labelledby="invite-title">
+  <div class="sheet-inner">
+    <button class="icon-btn sheet-close" type="button" data-close aria-label="Close"><Icon name="x" /></button>
+    <h2 id="invite-title" class="t-h3" data-invite-title>Your invite link</h2>
+    <p class="t-small tabular" data-position hidden></p>
+
+    <div class="invite" data-invite hidden>
+      <p class="invite-title" data-invite-note>Share your link.</p>
+      <div class="invite-row">
+        <output class="invite-link" data-link></output>
+        <button class="btn btn-secondary invite-copy" type="button" data-copy autofocus><Icon name="copy" /><span data-copy-label>Copy</span></button>
+      </div>
+      <a class="btn btn-text invite-x" data-share-x target="_blank" rel="noopener"><Icon name="xLogo" /> Share on X</a>
+    </div>
+
+    <form class="first-task" data-first-task>
+      <label for="first-task" class="first-task-label">What would you have Alma do first?</label>
+      <textarea id="first-task" name="firstTask" rows="2" maxlength="500" placeholder="Clean up my Downloads folder every Friday"></textarea>
+      <div class="first-task-actions">
+        <button class="btn btn-primary" type="submit">Send to the team</button>
+        <p class="t-small" data-first-task-msg aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+
+<style>
+  .sheet {
+    width: min(460px, calc(100vw - 2 * var(--gutter)));
+    max-height: calc(100dvh - 2 * var(--gutter));
+    margin: auto auto var(--gutter) var(--gutter);
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-surface);
+    background: var(--sea-850);
+    color: var(--ink-100);
+    overscroll-behavior: contain;
+  }
+  .sheet::backdrop { background: rgb(7 1 11 / 0.55); }
+  .sheet-inner { position: relative; display: grid; gap: var(--s-4); padding: var(--s-6); }
+  .sheet-close { position: absolute; top: var(--s-4); right: var(--s-4); }
+  .sheet-close :global(svg) { width: 18px; height: 18px; }
+  .sheet h2 { padding-right: var(--s-8); }
+
+  .invite { display: grid; gap: var(--s-2); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--r-media); background: var(--sea-800); }
+  .invite[hidden] { display: none; }
+  .invite-title { font-weight: 500; }
+  .invite-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-2); align-items: center; }
+  .invite-link { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-300); }
+  .invite-copy { min-height: 40px; padding: 0 var(--s-4); }
+  .invite-copy :global(svg), .invite-x :global(svg) { width: 16px; height: 16px; }
+  .invite-x { justify-self: start; padding-left: 0; }
+
+  .first-task { display: grid; gap: var(--s-2); }
+  .first-task[hidden] { display: none; }
+  .first-task-label { font-size: var(--t-small); color: var(--ink-300); }
+  .first-task textarea {
+    width: 100%;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    background: var(--sea-800);
+    font-size: var(--t-input);
+    resize: none;
+  }
+  .first-task textarea::placeholder { color: var(--ink-400); } /* ~6:1; --ink-500 is for >=18px only */
+  .first-task textarea:focus-visible { outline: none; border-color: var(--glow-500); box-shadow: 0 0 0 4px var(--glow-halo); }
+  .first-task-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
+
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet[open] { animation: sheet-in var(--d-sheet) var(--ease-drawer); }
+    @keyframes sheet-in { from { opacity: 0; transform: translateY(16px); } }
+  }
+  @media (max-width: 767px) {
+    .sheet {
+      width: 100%;
+      max-width: none;
+      margin: auto 0 0;
+      border-radius: var(--r-surface) var(--r-surface) 0 0;
+      border-bottom: 0;
+    }
+    .sheet-inner { padding: var(--s-5) var(--gutter) max(var(--s-5), env(safe-area-inset-bottom)); }
+    @media (prefers-reduced-motion: no-preference) {
+      .sheet[open] { animation: sheet-up var(--d-sheet) var(--ease-drawer); }
+      @keyframes sheet-up { from { transform: translateY(100%); } }
+    }
+  }
+</style>

@@ -1,0 +1,13 @@
+# Handover: Alma landing page redesign
+
+## Current state (2026-11-12): The Dive.
+
+**Read first:** `docs/dive/00-INDEX.md` (source of truth: plan, philosophy, language, system, conversion), then `01-PLAN.md` §8 (build state), §10 and §11 (the user's round 2 and 3 direction, which override older rules where they disagree), then `PRODUCT.md`.
+
+- **What it is:** one pinned screen; native scroll dives a camera through the water after one jellyfish: Surface → Mid-water → The deep (Macs showing the recordings, distant kin; after a moment the creature folds to a bud and blooms again). One depth per scroll gesture. The email form is on screen the whole way and moves a little with the composition. Recordings play on a Mac in a full-screen theatre.
+- **Built:** steps 1–6 of `01-PLAN.md` §5. **Waiting on the user:** the motion judged live in a normal window (✋ 3) and the ship decision (✋ 6). Pitch deck not started.
+- **Code map:** `src/components/Stage.astro` (page, rests, dock, depth line), `src/scripts/dive.ts` (GSAP ScrollTrigger conductor + choreography), `src/scripts/main.ts` (wiring, states, theatre, Mac picking), `src/scripts/creature/scene.ts` (Three.js water, creature path, kin, Macs, ripples, fold), `src/scripts/ripples.ts`, `src/components/Theatre.astro` + `src/scripts/theatre.ts` (Mac theatre), `src/styles/tokens.css`.
+- **Binding decisions** (summary; the index has them all): pearl action, violet = the creature's life, no gold; 4px/12px corners; Miranda Sans; the creature never overlaps copy; the immortal-jellyfish idea never named; GSAP allowed (user, round 3); the form may move between depths (user, round 3).
+- **Still needed from Alma:** logomark SVG, exact wallpaper violet, captions for the voice recordings (O3), approval of pearl over gold (O2), the angel investors before naming any (O4), a real waitlist backend (mocks are labelled).
+- **Review link (2026-11-12):** https://alma-dive.vercel.app (Vercel project `alma-dive`, the user's account; production). Built with `PUBLIC_ASSET_BASE=https://alma.inc PUBLIC_POSTER_BASE=""`, `.mp4` files removed (recordings stream from alma.inc), `noindex` added and `og:image` made relative. Waitlist in mock mode. Redeploy: rebuild the same way into a clean folder, then `vercel deploy <folder> --prod --name alma-dive`. Only the short `alma-dive.vercel.app` URL is public; the team URLs are behind Vercel's protection.
+- **Review switches:** `?depth=mid|deep`, `__conductor.state()`, `?debug=nowebgl`, `window.__dive.bench(200)`, `__dive.probe(x,y,w,h)` (brightest luminance behind a rect), `__dive.depth(v)` / `__dive.release()`.

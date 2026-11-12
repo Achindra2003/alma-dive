@@ -1,0 +1,17 @@
+---
+import Base from "../../layouts/Base.astro";
+import Stage from "../../components/Stage.astro";
+import { DEMOS, demoFiles, type Demo } from "../../data/demos";
+
+export function getStaticPaths() {
+  return DEMOS.map((demo) => ({ params: { slug: demo.slug }, props: { demo } }));
+}
+const { demo } = Astro.props as { demo: Demo };
+---
+<Base
+  title={`${demo.task}: Alma on a real Mac`}
+  description={`${demo.caption} Unedited recording. Get early access to Alma.`}
+  ogImage={demoFiles(demo.slug).poster}
+>
+  <Stage initialDemo={demo} />
+</Base>

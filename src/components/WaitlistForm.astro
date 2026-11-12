@@ -1,0 +1,78 @@
+---
+// The one conversion form. Success details live in InviteSheet; this keeps a compact confirmation in place.
+const uid = "wl";
+---
+<div class="wl" data-waitlist data-placement="hero" data-status="idle" id="join">
+  <form class="wl-form" action="/waitlist" method="post" novalidate>
+    <label for={`${uid}-email`} class="wl-label">Email for your invite</label>
+    <div class="wl-row">
+      <input
+        id={`${uid}-email`}
+        class="wl-input"
+        type="email"
+        name="email"
+        inputmode="email"
+        autocomplete="email"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        placeholder="you@domain.com"
+        maxlength="254"
+        required
+        aria-describedby={`${uid}-msg`}
+      />
+      <button class="btn btn-primary wl-submit" type="submit"><span data-label>Get early access</span></button>
+    </div>
+    <p id={`${uid}-msg`} class="wl-msg" aria-live="polite"></p>
+    <p class="wl-platform" data-mac="Mac app in private testing. Invites go out in waves." data-other="Alma runs on Mac. Join now and open your invite there.">Mac app in private testing. Invites go out in waves.</p>
+  </form>
+
+  <div class="wl-done" data-success hidden tabindex="-1">
+    <!-- below the Surface the headline is out of sight, so the confirmation lives here too (01-PLAN §2, Joined) -->
+    <p class="wl-done-title">You’re in.</p>
+    <p class="wl-done-next">We’ll email you when your invite is ready.</p>
+    <button class="btn btn-secondary" type="button" data-open-invite>See your invite</button>
+  </div>
+</div>
+
+<style>
+  .wl { width: 100%; max-width: 480px; }
+  .wl-label { display: block; margin-bottom: var(--s-2); font-size: var(--t-small); color: var(--ink-300); }
+  /* field + action: two controls, one corner system (4px), the pearl action beside the raised field */
+  .wl-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-2); }
+  .wl-input {
+    min-width: 0;
+    height: 52px;
+    padding: 0 var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--sea-800);
+    font-size: var(--t-input);
+    color: var(--ink-100);
+    transition: border-color var(--d-hover) ease, box-shadow var(--d-hover) var(--ease-out);
+  }
+  .wl-input::placeholder { color: var(--ink-400); }
+  .wl-input:focus { outline: none; }
+  .wl-input:focus-visible { border-color: var(--life); box-shadow: 0 0 0 3px var(--glow-halo); }
+  .wl-input[aria-invalid="true"] { border-color: var(--danger); }
+  .wl-submit { height: 52px; padding-inline: var(--s-5); }
+  .wl-msg { min-height: 1.4em; margin-top: var(--s-2); font-size: var(--t-small); color: var(--ink-300); }
+  .wl[data-status="error"] .wl-msg { color: var(--danger); }
+  @media (prefers-reduced-motion: no-preference) {
+    .wl[data-status="error"] .wl-msg:not(:empty) { animation: msg-in 160ms var(--ease-out); }
+    @keyframes msg-in { from { opacity: 0; transform: translateY(4px); } }
+  }
+  .wl-platform { font-size: var(--t-micro); color: var(--ink-400); }
+  .wl[data-status="submitting"] .wl-submit { cursor: progress; }
+
+  .wl-done { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4); outline: none; }
+  .wl-done[hidden] { display: none; }
+  .wl-done-title { width: 100%; font-size: var(--t-h3); font-weight: 500; line-height: 1.2; }
+  .wl-done-next { width: 100%; margin-top: calc(-1 * var(--s-3)); font-size: var(--t-micro); color: var(--ink-300); }
+  /* at the Surface the headline already says it */
+  :global(html[data-rest="surface"]) .wl-done-title, :global(html[data-rest="surface"]) .wl-done-next { display: none; }
+
+  @media (max-width: 430px) {
+    .wl-row { grid-template-columns: 1fr; }
+  }
+</style>

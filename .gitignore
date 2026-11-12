@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.env
+
+# exported Claude Code conversations (may contain personal details)
+20[0-9][0-9]-*-*.txt
+.impeccable/review/*.txt
+baton.txt
+
+# Alma's recordings, copied from alma.inc for local work (large; not ours to commit)
+public/media/demos/
+batonx.txt
+batonxx.txt

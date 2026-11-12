@@ -1,0 +1,158 @@
+/* Alma design tokens for The Dive. Values and roles: docs/dive/04-DESIGN-SYSTEM.md.
+   Miranda Sans, #0B0111 base, pearl ink and action, violet for the creature's life. One theme (dark). */
+
+/* Miranda Sans (OFL-1.1, via @fontsource-variable/miranda-sans 5.3.0), self-hosted, latin subset, variable 400-700 */
+@font-face {
+  font-family: "Miranda Sans";
+  src: url("/fonts/miranda-sans-wght.woff2") format("woff2-variations"), url("/fonts/miranda-sans-wght.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Miranda Sans";
+  src: url("/fonts/miranda-sans-wght-italic.woff2") format("woff2-variations"), url("/fonts/miranda-sans-wght-italic.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Color: water */
+  --sea-950: #07010b;
+  --sea-900: #0b0111; /* brand theme-color, page background */
+  --sea-850: oklch(15% 0.038 308);
+  --sea-800: oklch(17% 0.04 305);   /* --water-2: raised surfaces (field, dialogs) */
+  --sea-700: oklch(22% 0.04 303);
+  /* Water by depth (top of frame, bottom of frame). The scene draws these; the no-WebGL still uses them. */
+  --water-surface-top: oklch(40% 0.10 268);
+  --water-surface-bottom: oklch(15% 0.06 288);
+  --water-mid-top: oklch(18% 0.07 282);
+  --water-mid-bottom: oklch(9% 0.04 300);
+  --line: oklch(95% 0.012 300 / 0.12);
+  --line-strong: oklch(95% 0.012 300 / 0.22);
+
+  /* Color: text (contrast measured on --sea-900) */
+  /* pearl ink, tinted toward plum; never pure white */
+  --ink-100: oklch(95% 0.012 300);  /* headline, primary text, the action */
+  --ink-300: oklch(76% 0.02 300);   /* sub, secondary text */
+  --ink-400: oklch(66% 0.02 300);   /* meta (>= 4.5:1 on the water) */
+  --ink-500: oklch(52% 0.02 300);   /* disabled, or >= 24px only */
+
+  /* Color: the one accent is LIFE (the creature's violet): its light, focus, caret, selection, links.
+     Gold is retired on this page (user, 2026-11-11: "the gold feels out of place"). */
+  --life: oklch(70% 0.16 285);
+  --glow-300: oklch(80% 0.12 285);
+  --glow-500: var(--life);
+  --glow-700: oklch(58% 0.17 285);
+  --on-glow: #0b0111;
+  --glow-halo: oklch(70% 0.16 285 / 0.24);
+  /* The action: pearl, the brightest thing on screen */
+  --action: oklch(95% 0.012 300);
+  --action-hover: oklch(99% 0.006 300);
+  --action-press: oklch(87% 0.016 300);
+  --on-action: #0b0111;
+
+  /* Color: semantic (text and borders only) */
+  --danger: #ff8f80;
+
+  /* Type */
+  --font-brand: "Miranda Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+
+  --t-display: min(clamp(2.75rem, 1.4rem + 5.4vw, 7.5rem), 16dvh); /* Display role: a title over a film frame */
+  --t-display-long: clamp(1.75rem, 1rem + 2.4vw, 3.5rem);
+  --t-title: min(clamp(2rem, 1rem + 3vw, 4rem), 8.5dvh);  /* Title role: the line that heads each depth below the Surface (01-PLAN §10) */
+  --lh-title: 1.02;
+  --track-title: -0.03em;
+  --t-h2: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+  --t-h3: 1.25rem;
+  --t-lead: clamp(1.0625rem, 0.95rem + 0.35vw, 1.25rem); /* sub, chores */
+  --t-body: 1.0625rem;
+  --t-small: 0.875rem;
+  --t-micro: 0.8125rem;
+  --t-input: 1rem; /* never below 16px: prevents iOS focus zoom */
+
+  --lh-display: 0.94;
+  --lh-heading: 1.1;
+  --lh-body: 1.55;
+
+  --track-display: -0.04em;
+  --track-heading: -0.02em;
+
+  --measure: 60ch;
+
+  /* Space (4px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  --section-y: var(--s-9);
+  --gutter: 24px;
+  --container: 1280px;
+  --header-h: 64px;
+  --tap-min: 44px;
+
+  /* Shape: ONE system. Controls 4px, surfaces 12px (user, 2026-11-11). --r-pill keeps its name for the controls. */
+  --r-pill: 4px;
+  --r-surface: 12px;
+  --r-media: 4px;
+  --r-sm: 4px;
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px var(--sea-900), 0 0 0 4px var(--glow-500);
+
+  /* Glass (sticky bar only) */
+  --glass-fill: rgb(17 8 24 / 0.72);
+  --glass-blur: blur(16px) saturate(140%);
+
+  /* Motion (curves from the animate skill, do not invent new ones) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --d-press: 120ms;
+  --d-hover: 150ms;
+  --d-exit: 160ms;
+  --d-enter: 240ms;
+  --d-sheet: 280ms;
+  --d-reveal: 400ms;
+  --d-reach: 600ms;
+  --stagger: 60ms;
+
+  /* Creature rhythm */
+  --pulse-contract: 280ms;
+  --pulse-relax: 1100ms;
+  --pulse-idle: 3200ms;
+  --pulse-attentive: 2200ms;
+
+  /* Layers */
+  --z-canvas: 0;
+  --z-content: 1;
+  --z-sticky: 20;
+  --z-header: 30;
+  --z-grain: 40;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --section-y: var(--s-8);
+    --gutter: 16px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-fill: var(--sea-850);
+    --glass-blur: none;
+  }
+}

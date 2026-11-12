@@ -1,0 +1,27 @@
+---
+// 404 in the page's own art direction (awwwards-jury anti-pattern RED #7: unfinished edges), with a way back.
+import Base from "../layouts/Base.astro";
+---
+<Base title="Not found · Alma" description="This page doesn’t exist. Head back to Alma.">
+  <main class="lost" id="main">
+    <a class="lost-mark" href="/">Alma</a>
+    <h1 class="lost-title">Nothing lives here.</h1>
+    <p class="lost-sub">The page you asked for doesn’t exist, or it moved.</p>
+    <a class="btn btn-primary" href="/">Back to Alma</a>
+  </main>
+</Base>
+
+<style>
+  .lost {
+    min-height: 100dvh;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: var(--s-5);
+    padding: var(--s-6) clamp(20px, 4vw, var(--s-8));
+    background: radial-gradient(60% 50% at 70% 35%, oklch(30% 0.12 285 / 0.45), transparent 70%), var(--sea-900);
+  }
+  .lost-mark { position: absolute; top: var(--s-5); left: clamp(20px, 4vw, var(--s-8)); font-size: 1.375rem; font-weight: 500; letter-spacing: -0.02em; text-decoration: none; }
+  .lost-title { font-size: clamp(3rem, 1.2rem + 6vw, 7rem); font-weight: 500; line-height: 0.92; letter-spacing: -0.04em; text-wrap: balance; }
+  .lost-sub { max-width: 40ch; color: var(--ink-300); font-size: var(--t-lead); }
+</style>
