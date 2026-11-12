@@ -1,4 +1,6 @@
 ---
+import Icon from "./Icon.astro";
+import { CHORES } from "../data/chores";
 // The one conversion form. Success details live in InviteSheet; this keeps a compact confirmation in place.
 const uid = "wl";
 ---
@@ -31,7 +33,29 @@ const uid = "wl";
     <!-- below the Surface the headline is out of sight, so the confirmation lives here too (01-PLAN §2, Joined) -->
     <p class="wl-done-title">You’re in.</p>
     <p class="wl-done-next">We’ll email you when your invite is ready.</p>
-    <button class="btn btn-secondary" type="button" data-open-invite>See your invite</button>
+
+    <!-- The qualifier [05-CONVERSION §1, C8]: one question, choices that stay put. Picking marks one (it can change);
+         nothing disappears or reflows. The question line answers in place. -->
+    <div class="chores" role="group" aria-labelledby="chores-label" data-chores>
+      <p id="chores-label" class="chores-lead" aria-live="polite" data-chores-lead>What should Alma take off your hands first?</p>
+      <!-- the choices and the "Something else" field share one cell: swapping them never changes the height -->
+      <div class="chores-body">
+      <div class="chore-row" data-chore-row>
+        {CHORES.map((c) => <button class="chore" type="button" aria-pressed="false" data-chore-pick><Icon name="check" />{c}</button>)}
+        <button class="chore" type="button" aria-pressed="false" data-name-own><Icon name="check" />Something else</button>
+      </div>
+      <form class="handover" data-handover data-off inert>
+        <label for="handover-input" class="sr-only">Name the chore you’re done with</label>
+        <div class="handover-field">
+        <input id="handover-input" class="handover-input" type="text" name="chore" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="Name the chore you’re done with" />
+        <button class="handover-go" type="submit" aria-label="Hand it over"><Icon name="arrowRight" /></button>
+        </div>
+        <button class="handover-back" type="button" data-handover-back>Back to the choices</button>
+      </form>
+      </div>
+    </div>
+
+    <button class="wl-invite" type="button" data-open-invite>See your invite</button>
   </div>
 </div>
 
@@ -65,10 +89,84 @@ const uid = "wl";
   .wl-platform { font-size: var(--t-micro); color: var(--ink-400); }
   .wl[data-status="submitting"] .wl-submit { cursor: progress; }
 
-  .wl-done { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4); outline: none; }
+  .wl-done { display: grid; gap: var(--s-3); outline: none; }
   .wl-done[hidden] { display: none; }
   .wl-done-title { width: 100%; font-size: var(--t-h3); font-weight: 500; line-height: 1.2; }
   .wl-done-next { width: 100%; margin-top: calc(-1 * var(--s-3)); font-size: var(--t-micro); color: var(--ink-300); }
+
+  /* the question: one line, always the same height, so its answer never moves anything */
+  .chores { display: grid; gap: var(--s-3); }
+  .chores-lead { min-height: 1.5em; font-size: var(--t-micro); line-height: 1.5; color: var(--ink-300); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* always two rows of two equal choices: the block's height never depends on the labels */
+  .chore-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+  /* a choice: the control language (4px, the field's surface and line), never pearl (one action on the page) */
+  .chore {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: var(--tap-min);
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: color-mix(in oklch, var(--sea-800) 80%, transparent);
+    color: var(--ink-300);
+    font-size: var(--t-input);
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--d-hover) ease, border-color var(--d-hover) ease, background-color var(--d-hover) ease, transform var(--d-press) var(--ease-out);
+  }
+  .chore :global(svg) { width: 0; height: 14px; flex: none; opacity: 0; margin-right: calc(-1 * var(--s-2)); transition: width var(--d-enter) var(--ease-out), opacity var(--d-enter) var(--ease-out), margin var(--d-enter) var(--ease-out); }
+  .chore:active { transform: scale(0.97); }
+  @media (max-width: 430px) { .chore { padding-inline: var(--s-3); } }
+  .chore[aria-pressed="true"] { color: var(--ink-100); border-color: var(--ink-300); background: var(--sea-700); }
+  .chore[aria-pressed="true"] :global(svg) { width: 14px; opacity: 1; margin-right: 0; }
+  @media (hover: hover) and (pointer: fine) { .chore:hover { color: var(--ink-100); border-color: var(--ink-400); } }
+
+  .chores-body { display: grid; }
+  .chores-body > * { grid-area: 1 / 1; transition: opacity var(--d-enter) var(--ease-out), visibility 0s; }
+  /* the one not in use keeps its place (so the cell keeps its height) but is gone: invisible and inert */
+  .chores-body > [data-off] { opacity: 0; visibility: hidden; transition: opacity var(--d-exit) ease, visibility 0s linear var(--d-exit); }
+  .handover { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-content: start; row-gap: var(--s-1); }
+  .handover-field {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding-left: var(--s-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--sea-800);
+    transition: border-color var(--d-hover) ease, box-shadow var(--d-hover) var(--ease-out);
+  }
+  .handover-field:focus-within { border-color: var(--life); box-shadow: 0 0 0 3px var(--glow-halo); }
+  .handover-back { justify-self: start; min-height: var(--tap-min); padding: 0; border: 0; background: none; color: var(--ink-400); font-size: var(--t-micro); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 5px; cursor: pointer; }
+  @media (hover: hover) and (pointer: fine) { .handover-back:hover { color: var(--ink-100); } }
+  .handover-input { min-width: 0; height: var(--field-h, 52px); padding: 0; border: 0; background: none; color: var(--ink-100); font-size: var(--t-input); }
+  .handover-input::placeholder { color: var(--ink-400); }
+  .handover-input:focus { outline: none; }
+  .handover-go { display: grid; place-items: center; width: var(--tap-min); height: var(--tap-min); border: 0; border-radius: var(--r-pill); background: none; color: var(--ink-300); cursor: pointer; transition: color var(--d-hover) ease, transform var(--d-press) var(--ease-out); }
+  .handover-go :global(svg) { width: 18px; height: 18px; }
+  .handover-go:active { transform: scale(0.97); }
+  @media (hover: hover) and (pointer: fine) { .handover-go:hover { color: var(--ink-100); } }
+
+  /* the invite: a quiet link, not a second button */
+  .wl-invite {
+    justify-self: start;
+    min-height: var(--tap-min);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink-300);
+    font-size: var(--t-micro);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 5px;
+    cursor: pointer;
+    transition: color var(--d-hover) ease, text-decoration-color var(--d-hover) ease;
+  }
+  @media (hover: hover) and (pointer: fine) { .wl-invite:hover { color: var(--ink-100); text-decoration-color: var(--ink-100); } }
+  :global(html[data-depth="deep"]) .wl-invite { justify-self: center; }
   /* at the Surface the headline already says it */
   :global(html[data-rest="surface"]) .wl-done-title, :global(html[data-rest="surface"]) .wl-done-next { display: none; }
 

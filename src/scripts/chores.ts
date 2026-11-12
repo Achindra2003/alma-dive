@@ -1,104 +1,113 @@
-// After joining: "Hand it the first one". A picked chore, or one typed into the hand-over field, rewrites the
-// headline to “<chore>.” Never again. and becomes the first-task answer the team receives.
-import { setHeadline } from "./headline";
+// After joining: "What should Alma take off your hands first?" [05-CONVERSION §1 qualifier, C8].
+// Round 8 [USER: "quite shittly done and very jittery when the copy changes"]: the headline no longer changes; the
+// choices stay where they are (one is marked, and it can change); the question line answers in place with a short
+// crossfade; "Something else" swaps the row for a field and Escape brings the row back. Layout changes glide (flip.ts).
+// The answer goes to the team as the first-task answer (mocked until Alma's backend has the endpoint: src/lib/api.ts).
 import { waitlist } from "./waitlist-store";
 import { track } from "../lib/analytics";
 import { safeStorage } from "../lib/platform";
 import { sendFirstTask } from "../lib/api";
 
 const KEY = "alma.chore";
+const QUESTION = "What should Alma take off your hands first?";
 const session = safeStorage("session");
 const local = safeStorage("local");
+const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** “Rename 200 screenshots.” — capitalised, one closing full stop, long ones cut. */
+/** “Rename 200 screenshots” as a quote, one line: cut at a word boundary, never mid-word. */
 export function choreLine(text: string) {
   const t = text.trim().replace(/\s+/g, " ").replace(/[.!?…,;:\s]+$/u, "");
-  // long chores are cut at a word boundary, never mid-word (break-ui: "…NetSui…" reads as a bug)
-  let cut = `${t}.`;
-  if (t.length > 48) {
-    const head = t.slice(0, 47);
+  let cut = t;
+  if (t.length > 40) {
+    const head = t.slice(0, 39);
     const sp = head.lastIndexOf(" ");
-    cut = `${(sp > 24 ? head.slice(0, sp) : head).replace(/[\s,;:–-]+$/u, "")}…`;
+    cut = `${(sp > 20 ? head.slice(0, sp) : head).replace(/[\s,;:–-]+$/u, "")}…`;
   }
   return `“${cut.charAt(0).toUpperCase()}${cut.slice(1)}”`;
 }
 
-export function initChores(opts: { h1: HTMLElement; sub: HTMLElement; focusEmail: () => void }) {
+export function initChores() {
   const group = document.querySelector<HTMLElement>("[data-chores]");
-  const form = document.querySelector<HTMLFormElement>("[data-handover]");
-  if (!group && !form) return;
-  const buttons = group ? [...group.querySelectorAll<HTMLButtonElement>("[data-chore-pick]")] : [];
-  const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
-  let handed = session.get(KEY) ?? "";
+  if (!group) return;
+  const lead = group.querySelector<HTMLElement>("[data-chores-lead]")!;
+  const row = group.querySelector<HTMLElement>("[data-chore-row]")!;
+  const form = group.querySelector<HTMLFormElement>("[data-handover]")!;
+  const input = form.querySelector<HTMLInputElement>("input")!;
+  const own = group.querySelector<HTMLButtonElement>("[data-name-own]")!;
+  const picks = [...group.querySelectorAll<HTMLButtonElement>("[data-chore-pick]")];
+  const all = [...picks, own];
 
-  const accept = (text: string, source: string) => {
-    handed = text.slice(0, 200);
+  // the question line answers in place: same line, same height; the new words fade in (set at once, so two
+  // answers in quick succession can never leave the wrong one showing)
+  function say(text: string) {
+    if (lead.textContent === text) return;
+    lead.textContent = text;
+    if (!reduce()) lead.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+  }
+  const mark = (btn: HTMLButtonElement | null) => all.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+
+  function answer(text: string, source: "pick" | "typed", btn: HTMLButtonElement) {
+    const handed = text.trim().slice(0, 200);
+    if (!handed) return;
     session.set(KEY, handed);
-    track("chore_pick", { source, length: handed.length });
-    return true;
-  };
-  // After joining, the chore is the visitor's first-task answer: it goes to the team (the endpoint is mocked
-  // until Alma's backend has one; see src/lib/api.ts) and the headline answers.
-  const resolve = (text: string) => {
-    setHeadline(opts.h1, [choreLine(text), "Never again."]);
+    track(source === "pick" ? "chore_pick" : "chore_name_own", { length: handed.length });
+    mark(btn);
+    say(`Noted. Alma will start with ${choreLine(handed)}.`);
     const s = waitlist.get();
-    if (s.status === "success") {
-      opts.sub.textContent = "That’s the first thing Alma will hear from you. We’ll email you when your invite is ready.";
-      void sendFirstTask(s.email, text).then((ok) => {
-        if (!ok) return;
-        local.set("alma.waitlist.firstTask", "1");
-        // the invite sheet must not ask again for what was just handed over
-        const ft = document.querySelector<HTMLElement>("[data-first-task]");
-        if (ft) ft.hidden = true;
-      });
-    } else {
-      opts.sub.textContent = "Alma will take it from here. Where should we send your invite?";
-    }
-  };
-
-  // a drifting chore
-  buttons.forEach((btn) =>
-    btn.addEventListener("click", (e) => {
-      const text = (btn.textContent ?? "").trim();
-      if (!text || !accept(text, "drift")) return;
-      const viaKeyboard = (e as MouseEvent).detail === 0;
-      buttons.forEach((b) => { if (b !== btn) { b.removeAttribute("data-taken"); b.removeAttribute("data-gone"); } });
-      btn.setAttribute("data-gone", "");
-      resolve(text);
-      // the next step is the email. Keyboard and mouse go straight there; touch doesn't pop the keyboard unasked.
-      if ((viaKeyboard || finePointer) && waitlist.get().status !== "success") opts.focusEmail();
-    }),
-  );
-
-  // "Name your own": the field only appears when asked for, so the first view holds one form
-  const own = document.querySelector<HTMLButtonElement>("[data-name-own]");
-  own?.addEventListener("click", () => {
-    if (!form) return;
-    form.hidden = false;
-    own.hidden = true;
-    form.querySelector<HTMLInputElement>("input")!.focus();
-    track("chore_name_own");
-  });
-
-  // a typed chore
-  if (form) {
-    const input = form.querySelector<HTMLInputElement>("input")!;
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) { input.focus(); return; }
-      if (!accept(text, "typed")) return;
-      buttons.forEach((b) => { b.removeAttribute("data-taken"); b.removeAttribute("data-gone"); });
-      input.value = "";
-      resolve(text);
-      if (waitlist.get().status !== "success") opts.focusEmail();
+    if (s.status !== "success") return;
+    void sendFirstTask(s.email, handed).then((ok) => {
+      if (!ok) return;
+      local.set("alma.waitlist.firstTask", "1");
+      // the invite sheet must not ask again for what was just handed over [C8]
+      const ft = document.querySelector<HTMLElement>("[data-first-task]");
+      if (ft) ft.hidden = true;
+      const area = document.querySelector<HTMLTextAreaElement>("[data-first-task] textarea");
+      if (area && !area.value) area.value = handed;
     });
   }
 
-  // the chore they handed over becomes their first-task answer automatically
-  waitlist.subscribe((s) => {
-    if (s.status !== "success" || !handed) return;
-    const area = document.querySelector<HTMLTextAreaElement>("[data-first-task] textarea");
-    if (area && !area.value) area.value = handed;
+  picks.forEach((btn) => btn.addEventListener("click", () => answer((btn.textContent ?? "").trim(), "pick", btn)));
+
+  // "Something else": the field takes the choices' place in the same cell (no height change); "Back to the choices",
+  // Escape or an empty submit brings the choices back
+  const showField = (on: boolean) => {
+    row.toggleAttribute("data-off", on);
+    row.inert = on;
+    form.toggleAttribute("data-off", !on);
+    form.inert = !on;
+    if (on) { say("Name it. Alma will start there."); input.focus({ preventScroll: true }); }
+  };
+  const back = () => {
+    input.value = "";
+    showField(false);
+    const prev = session.get(KEY);
+    say(prev ? `Noted. Alma will start with ${choreLine(prev)}.` : QUESTION);
+    own.focus({ preventScroll: true });
+  };
+  group.querySelector("[data-handover-back]")!.addEventListener("click", back);
+  own.addEventListener("click", () => {
+    track("chore_own_open");
+    showField(true);
   });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    showField(false);
+    if (!text) { back(); return; }
+    answer(text, "typed", own);
+    own.focus({ preventScroll: true });
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    e.preventDefault();
+    back();
+  });
+
+  // a returning visitor sees what they already handed over
+  const prev = session.get(KEY);
+  if (prev) {
+    const btn = picks.find((b) => (b.textContent ?? "").trim() === prev) ?? own;
+    mark(btn);
+    lead.textContent = `Noted. Alma will start with ${choreLine(prev)}.`;
+  }
 }

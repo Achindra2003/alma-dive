@@ -230,6 +230,13 @@ The user said "finish the remaining steps" after approving the round 3 stills. M
 - Keyboard path: the depth line's Surface mark.
 - Checked: a click at The deep starts the climb folded; a full climb lands on the Surface, unfolded, with the field focused; console clean. Real-time feel: the user's call.
 
+### Round 8 · after signing up (2026-11-12)
+
+[USER] "the hand it the first one thing is quite shittly done and very jittery when the copy changes and just doesn't look nice".
+- Causes found: the headline was rewritten to the chosen chore (switching to the long-headline size), the sub line rewrote to a longer sentence, the chosen chore vanished and the others reflowed, and the form grew; all bottom-anchored, so each change shoved the copy up or down in one frame (measured: a 29px jump on pick).
+- Now: the headline stays "You're in."; the question is "What should Alma take off your hands first?" over a 2×2 grid of equal choice buttons in the control language (4px, field surface; never pearl): Rename screenshots, Invoices into a sheet, Reset a password, Something else. A pick is marked (check, lighter surface) and can change; the question line answers in place ("Noted. Alma will start with …") with a fade-in. "Something else" swaps the choices for a field in the same grid cell (no height change), with "Back to the choices" and Escape. "See your invite" is a quiet text link. Remaining layout changes we cause (signing up) glide via FLIP on `translate` (`flip.ts`), armed only around our own changes so the dive never triggers it.
+- Measured: headline and form position identical before and after picking, opening the field, answering, and going back. The answer is still the first-task answer the team receives (mocked until Alma's endpoint exists) and is remembered for the session.
+
 
 ## 10. Round 2 direction (2026-11-12, after ✋ 2 was rejected)
 

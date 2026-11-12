@@ -5,6 +5,7 @@ import { initDive, RESTS, AT, type Rest } from "./dive";
 import { initWaitlist } from "./waitlist-ui";
 import { initTheatre } from "./theatre";
 import { initRipples, ripple } from "./ripples";
+import { initFlip, armFlip } from "./flip";
 import { initChores } from "./chores";
 import { setHeadline } from "./headline";
 import { waitlist } from "./waitlist-store";
@@ -58,6 +59,11 @@ document.fonts?.ready.then(placeCreature);
 const asked = new URLSearchParams(location.search).get("depth") as Rest | null;
 if (asked && RESTS.includes(asked)) scrollTo({ top: AT[asked] * (document.documentElement.scrollHeight - innerHeight), behavior: "instant" });
 
+// layout changes we cause (signing up, the chore field) glide instead of jumping
+const snapFlip = initFlip(() => [dock, ...RESTS.map((r) => restEls[r]).filter((el) => el.hasAttribute("data-current"))], dock);
+addEventListener("resize", () => snapFlip(), { passive: true });
+document.querySelector(".wl-form")?.addEventListener("submit", () => armFlip(4000), { capture: true });
+
 let rest: Rest = "surface";
 let cycleT = 0;
 // Home from The deep [USER, round 7]: the immortal jellyfish, shown not named. It folds as the climb begins, stays a
@@ -90,6 +96,7 @@ const dive = initDive({
     root.dataset.rest = r;
     marks.forEach((m) => { if (m.dataset.goto === r) m.setAttribute("aria-current", "step"); else m.removeAttribute("aria-current"); });
     creature.setKeepOut([restEls[r], dock]);
+    snapFlip();
     // The deep is the end: once the visitor has been there a moment, the creature folds back to a bud, holds and
     // blooms again (the idea, felt and never named). Once per arrival; the depth-line jellyfish does the same.
     clearTimeout(cycleT);
@@ -114,6 +121,7 @@ const wl = initWaitlist({
     joined(fresh);
   },
 });
+// One line; the block above the form glides to its new place (flip.ts) instead of jumping.
 function joined(animate: boolean) {
   if (animate) void setHeadline(h1, ["You’re in."]);
   else { h1.querySelector(".line-in")!.textContent = "You’re in."; h1.querySelectorAll(".line")[1]?.remove(); }
@@ -122,7 +130,7 @@ function joined(animate: boolean) {
 if (waitlist.get().status === "success") { root.dataset.beat = "joined"; joined(false); }
 
 // after joining: hand Alma the first chore (it becomes the first-task answer)
-initChores({ h1, sub, focusEmail: () => wl.focus() });
+initChores();
 
 // ---------- proof: the theatre ----------
 const theatre = initTheatre({ onReturn: () => wl.focus(), depth: () => rest });
